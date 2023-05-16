@@ -11,7 +11,13 @@
 
 <body>
 
-<div class="line-item-div"></div>
+<form method="POST" action="/upload" enctype="multipart/form-data">
+    <div class="line-item-div"></div>
+        <button class="button button4" type="submit">
+            Upload</button> </div>
+</form>
+
+
 
 
 
@@ -109,10 +115,10 @@
 
         var $rowToAppend = '<div class="dynamic-row" data-index="' + index + '">';
 
-        $rowToAppend += '<div class="col-lg-12 form-group row">';
+        $rowToAppend += '<div class="col-lg-12 form-group row bodingFileCustomDiv">';
         $rowToAppend += createSelectBox(index, index === 0 ? itemList : result, '', 'itemSelect', 'items['+index+']');
         $rowToAppend += '<input type="text" class="form-control files-input-element filesBondingDiagram" id="filesBondingDiagram" placeholder="Paste Bonding Diagram" readonly="true" />';
-        $rowToAppend += '<input type="file" class="custom-file-input form-control bondingFileCustom" name="bonding_file_custom['+ index +']" />';
+        $rowToAppend += '<input type="file" class="custom-file-input form-control bondingFileCustom" name="bonding_file_custom[]" />';
         $rowToAppend += '</div>';
 
         $rowToAppend += '<div class="col-lg-12 form-group row">';
@@ -136,7 +142,9 @@
             !function (filesBondingDiagram){
                 filesBondingDiagram.addEventListener('paste', function(e) {
                     this.value = "File Found";
-                    this.closest(".bondingFileCustom").files = e.clipboardData.files;
+                    // debugger;
+                    // this.nextSibling.files = e.clipboardData.files;
+                    this.nextSibling.files = e.clipboardData.files;
                 }, true);
             }(filesBondingDiagrams[i]);
         };

@@ -24,19 +24,19 @@ public class MainController {
     }
 
     @PostMapping("/upload")
-    public String uploadFiles(@RequestParam("files") MultipartFile[] files) {
+    public String uploadFiles(@RequestParam("bonding_file_custom[]") MultipartFile[] files) {
         logger.info("::----post controller-----::");
         String message = "";
         try {
             Arrays.asList(files).stream().forEach(file -> {
-                logger.info("::----file name-----::", file.getOriginalFilename());
+                logger.info("::----file name-----::" + file.getOriginalFilename());
             });
 
             message = "Uploaded the files successfully: ";
-            return message;
+            return "redirect:/";
         } catch (Exception e) {
             message = "Fail to upload files!";
-            return message;
+            return "redirect:/";
         }
     }
 }
