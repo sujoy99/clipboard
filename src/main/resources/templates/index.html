@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+<body>
+
+<body>
+
+<div class="line-item-div"></div>
+
+
+
+
+<!-- jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+<script>
+    const itemList = [
+        {
+            id: 1,
+            value: "a"
+        },
+        {
+            id: 2,
+            value: "b"
+        },
+        {
+            id: 3,
+            value: "c"
+        },
+        {
+            id: 4,
+            value: "d"
+        }
+    ];
+
+    const itemMapById = {
+        1: {
+            id: 1,
+            value: "a"
+        },
+        2: {
+            id: 2,
+            value: "b"
+        },
+        3: {
+            id: 3,
+            value: "c"
+        },
+        4: {
+            id: 4,
+            value: "d"
+        }
+    };
+
+    const addButton = '<button type="button" class="btn btn-primary itemAddButtonFlat" style="margin-left: 5px;"><i class="fa fa-plus"></i>  Add </button>';
+    const removeButton = '<button type="button" class="btn btn-danger itemRemoveButtonFlat"><i class="fa fa-minus"></i>  Remove </button>';
+    const lineItemDiv = $('.line-item-div');
+    $(document).ready(function () {
+        addLineItem(true);
+
+        $(document).on('click', 'button.itemAddButtonFlat', function () {
+            addLineItem(true);
+            addPlusIconForTheLastItem();
+        });
+
+        $(document).on('click', 'button.itemRemoveButtonFlat', function () {
+            $(this).closest('div.dynamic-row').remove();
+            addPlusIconForTheLastItem();
+            reIndexLineItems();
+            let existingItems = updatingItemList();
+            let result = uniqueItemList(existingItems);
+            reRenderSelectBox(existingItems, result);
+        });
+
+        $(document).on('change', 'select.itemSelect', function () {
+            let existingItems = updatingItemList();
+            let result = uniqueItemList(existingItems);
+            reRenderSelectBox(existingItems, result);
+        });
+
+        // var filesBondingDiagrams = document.getElementsByClassName('filesBondingDiagram');
+        // console.log('filesBondingDiagrams', filesBondingDiagrams);
+        // for (var i = 0, length = filesBondingDiagrams.length; i < length; i++) {
+        //     !function (filesBondingDiagram){
+        //         filesBondingDiagram.addEventListener('paste', function(e) {
+        //             console.log('chekc', e);
+        //         }, true);
+        //     }(filesBondingDiagrams[i]);
+        // };
+    });
+
+    function addLineItem(isPlusIcon) {
+        var index = lineItemDiv.find('div.dynamic-row').length;
+        let updatedItemList = [];
+        let result = []
+        if (index > 0) {
+            let existingItems = updatingItemList();
+            result = uniqueItemList(existingItems);
+        }
+
+        var $rowToAppend = '<div class="dynamic-row" data-index="' + index + '">';
+
+        $rowToAppend += '<div class="col-lg-12 form-group row">';
+        $rowToAppend += createSelectBox(index, index === 0 ? itemList : result, '', 'itemSelect', 'items['+index+']');
+        $rowToAppend += '<input type="text" class="form-control files-input-element filesBondingDiagram" id="filesBondingDiagram" placeholder="Paste Bonding Diagram" readonly="true" />';
+        $rowToAppend += '<input type="file" class="custom-file-input form-control bondingFileCustom" name="bonding_file_custom['+ index +']" />';
+        $rowToAppend += '</div>';
+
+        $rowToAppend += '<div class="col-lg-12 form-group row">';
+        $rowToAppend += '<div class="col-md-12 itemAddRemoveButtonDiv pt-2" style="text-align:right">';
+        if (isPlusIcon) {
+            $rowToAppend += addButton;
+        } else {
+            $rowToAppend += removeButton;
+        }
+        $rowToAppend += '</div>';
+
+        $rowToAppend += '</div>';
+
+        $rowToAppend += '</div>';
+
+        lineItemDiv.append($rowToAppend);
+
+        var filesBondingDiagrams = document.getElementsByClassName('filesBondingDiagram');
+        console.log('filesBondingDiagrams', filesBondingDiagrams.length);
+        for (var i = 0, length = filesBondingDiagrams.length; i < length; i++) {
+            !function (filesBondingDiagram){
+                filesBondingDiagram.addEventListener('paste', function(e) {
+                    this.value = "File Found";
+                    this.closest(".bondingFileCustom").files = e.clipboardData.files;
+                }, true);
+            }(filesBondingDiagrams[i]);
+        };
+
+    }
+
+    function addPlusIconForTheLastItem() {
+        if (lineItemDiv.children().length == 1) {
+            lineItemDiv.find('div.dynamic-row:last').find('div.itemAddRemoveButtonDiv').html(addButton);
+        }
+        else {
+            lineItemDiv.find('div.dynamic-row:last').find('div.itemAddRemoveButtonDiv').html(removeButton + addButton);
+        }
+    }
+
+    function createSelectBox(index, list, selectedValue, className, name) {
+        let html = '';
+        html += '<select class ="' + className + '" name="' + name + '">';
+        html += '<option value=""> -- Select Any -- </option>';
+        $.each(list, function (index, item) {
+            if (selectedValue == item.id) {
+                html += '<option value="' + item.id + '" selected>' + item.value + '</option>';
+            } else {
+                html += '<option value="' + item.id + '">' + item.value + '</option>';
+            }
+        });
+        html += '</select>';
+        return html;
+    }
+
+    function updatingItemList() {
+        let list = [];
+        $("div.dynamic-row").each(function(i, itm){
+            list.push($(itm).find('select.itemSelect :selected').val());
+        })
+        return list;
+    }
+
+    function reIndexLineItems(){
+        var index = 0;
+        var name = '';
+
+        lineItemDiv.find('div.dynamic-row').each(function(){
+            name = 'items[' + index + ']';
+            // $(this).find('div').find('input.product-line-id').attr("name", name + ".id");
+            $(this).find('div').find('select.itemSelect').attr("name", name);
+            index++;
+        });
+    }
+
+    function uniqueItemList(existingItems){
+        let result = [];
+        result = itemList.filter(function (o1) {
+            return !existingItems.some(function (o2) {
+                return o1.id ===  +o2;
+            });
+        })
+        return result;
+    }
+
+    function reRenderSelectBox(existingItemList, uniqueItemList){
+        lineItemDiv.find('div.dynamic-row').each(function(i, itm){
+            let currSelectBox = $(this).find('div').find('select.itemSelect');
+            let selectedItem = currSelectBox.val();
+            item = itemMapById[+selectedItem];
+            let selectHtml = createSelectBox(i, [...uniqueItemList, item], selectedItem, 'itemSelect', 'items['+i+']')
+            currSelectBox.html(selectHtml);
+        });
+    }
+</script>
+</body>
+</html>
